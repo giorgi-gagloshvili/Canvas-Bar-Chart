@@ -7,8 +7,10 @@ async function createChart(type, data = []) {
   //   console.log(ctx);
   // canvas.style.background = "red";
 
-  canvas.width = 1280;
-  canvas.height = 560;
+  canvas.width = canvas.width === 300 ? 1280 : canvas.width;
+  canvas.height = canvas.height === 150 ? 560 : canvas.height;
+
+  console.log({ width: canvas.width });
 
   let margin = 40;
   let colMargin = 20;
@@ -110,24 +112,33 @@ async function createChart(type, data = []) {
       let columnSize = gridWidth / data.length;
 
       for (let i = 0; i < data.length; i++) {
+        const percent = (data[i].value / lineLimit) * 100;
+        const height = gridHeight - (percent / 100) * gridHeight;
         ctx.beginPath();
-        ctx.arc(i * columnSize + margin, data[i].value, 3.5, 0, Math.PI * 2);
+        ctx.arc(i * columnSize + margin, height + margin, 3.5, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
         ctx.fill();
         ctx.closePath();
         ctx.beginPath();
 
         if (i === 0) {
+          const percent = (data[i + 1].value / lineLimit) * 100;
+          const firstLineHeight = gridHeight - (percent / 100) * gridHeight;
           positionX = columnSize * (i + 1);
-          positionY = data[i + 1].value;
-          console.log(data[i], "Pizdec");
-          ctx.moveTo(i * columnSize + margin, data[i].value);
-          ctx.lineTo(positionX + margin, positionY);
-        } else {
+          positionY = firstLineHeight;
+          // console.log("Pizdec", height + margin, positionY);
+          ctx.moveTo(i * columnSize + margin, height + margin);
+          ctx.lineTo(positionX + margin, firstLineHeight + margin);
+        } else if (i === data.length - 1) {
+          console.log(i);
           ctx.moveTo(positionX + margin, positionY);
-          ctx.lineTo(columnSize * (i + 1) + margin, data[i + 1].value);
+        } else {
+          const percent = (data[i + 1].value / lineLimit) * 100;
+          const height = gridHeight - (percent / 100) * gridHeight;
+          ctx.moveTo(positionX + margin, positionY + margin);
+          ctx.lineTo(columnSize * (i + 1) + margin, height + margin);
           positionX = columnSize * (i + 1);
-          positionY = data[i + 1].value;
+          positionY = height;
         }
 
         ctx.strokeStyle = "rgba(255, 0, 0, 0.5)";
@@ -151,7 +162,8 @@ async function createChart(type, data = []) {
 }
 
 // createChart("bubble", bubbles);
-createChart("bar", data);
+// createChart("bar", data);
+createChart("line", data);
 
 function drawGrid(type, canvas, ctx, margin, width, height, length) {
   // Draw chart rectangle
